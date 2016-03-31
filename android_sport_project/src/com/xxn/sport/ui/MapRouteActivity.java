@@ -885,7 +885,7 @@ public class MapRouteActivity extends BaseActivity implements OnClickListener {
 					Boolean status = jsonTool.getStatus(); // Boolean型变量，为true时成功
 					if (status) {
 						try {
-							ToastTool.showShort(MapRouteActivity.this, jsonObject.getInt("integralGained") +"");
+							ToastTool.showLong(MapRouteActivity.this, "本此运动获得" + jsonObject.getInt("integralGained") + "积分");
 						} catch (JSONException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
