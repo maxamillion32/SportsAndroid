@@ -13,22 +13,29 @@ import com.avos.avoscloud.AVCloud;
 import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.FunctionCallback;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
 import com.xxn.sport.R;
 import com.xxn.sport.base.BaseActivity;
 import com.xxn.sport.base.BaseApplication;
 import com.xxn.sport.config.Constants;
+import com.xxn.sport.utils.DateTimeTools;
 import com.xxn.sport.utils.FastJsonTool;
 import com.xxn.sport.utils.LogTool;
 import com.xxn.sport.utils.ToastTool;
 import com.xxn.sport.utils.UserPreference;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -37,6 +44,7 @@ import android.widget.TextView;
 public class ScoreBoardActivity extends BaseActivity implements OnClickListener {
 
 	private UserPreference userPreference;
+	private View mProgressView;// 缓冲
 	private ListView listView;
 	private List<String> items = new ArrayList<String>();;
 	private List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>(); // 用于存储list数据
@@ -56,6 +64,8 @@ public class ScoreBoardActivity extends BaseActivity implements OnClickListener 
 	private ImageView iv_2;
 	private ImageView iv_3;
 	private ImageView iv_4;
+
+	private TextView recDateTime;
 
 	private int SCORE_BOARD_RESULT = -1;
 	private int flag = 1; // 全局变量用来进行显示的设定
@@ -89,6 +99,9 @@ public class ScoreBoardActivity extends BaseActivity implements OnClickListener 
 		iv_2 = (ImageView) findViewById(R.id.sel_dot_2);
 		iv_3 = (ImageView) findViewById(R.id.sel_dot_3);
 		iv_4 = (ImageView) findViewById(R.id.sel_dot_4);
+
+		mProgressView = findViewById(R.id.wait_status);
+		recDateTime = (TextView) findViewById(R.id.rec_date_time);
 	}
 
 	@Override
@@ -111,6 +124,7 @@ public class ScoreBoardActivity extends BaseActivity implements OnClickListener 
 		parameters.put("timestamp", ""); // float参考时间
 		// 初始时先去获取积分信息，按月来获取,填充数据
 		getScoreBoardInfo(parameters);
+		showProgress(false);
 	}
 
 	@Override
@@ -144,6 +158,7 @@ public class ScoreBoardActivity extends BaseActivity implements OnClickListener 
 			parameters.put("unit", "1"); // 1-日，2-周，3-月，4-年度
 			parameters.put("timestamp", ""); // float参考时间
 			getScoreBoardInfo(parameters);
+			showProgress(true);
 			break;
 		case R.id.week_ranklist:
 			iv_1.setBackgroundResource(R.drawable.title_btn_dot_normal);
@@ -158,6 +173,7 @@ public class ScoreBoardActivity extends BaseActivity implements OnClickListener 
 			parameters.put("unit", "2"); // 1-日，2-周，3-月，4-年度
 			parameters.put("timestamp", ""); // float参考时间
 			getScoreBoardInfo(parameters);
+			showProgress(true);
 			break;
 		case R.id.month_ranklist:
 			iv_1.setBackgroundResource(R.drawable.title_btn_dot_normal);
@@ -172,6 +188,7 @@ public class ScoreBoardActivity extends BaseActivity implements OnClickListener 
 			parameters.put("unit", "3"); // 1-日，2-周，3-月，4-年度
 			parameters.put("timestamp", ""); // float参考时间
 			getScoreBoardInfo(parameters);
+			showProgress(true);
 			break;
 		case R.id.year_ranklist:
 			iv_1.setBackgroundResource(R.drawable.title_btn_dot_normal);
@@ -186,6 +203,7 @@ public class ScoreBoardActivity extends BaseActivity implements OnClickListener 
 			parameters.put("unit", "4"); // 1-日，2-周，3-月，4-年度
 			parameters.put("timestamp", ""); // float参考时间
 			getScoreBoardInfo(parameters);
+			showProgress(true);
 			break;
 		case R.id.login_button:
 			this.startActivity(new Intent(this, MainActivity.class));
@@ -242,7 +260,8 @@ public class ScoreBoardActivity extends BaseActivity implements OnClickListener 
 		AVCloud.callFunctionInBackground("GetUserTopList", parameters, new FunctionCallback<Object>() {
 			public void done(Object object, AVException e) {
 				// List<Map<String, Object>> listMap = null;
-				if(e == null){
+				showProgress(false);
+				if (e == null) {
 					String jsonString = JSON.toJSONString(object);
 					System.out.println(jsonString);
 				}
@@ -254,6 +273,20 @@ public class ScoreBoardActivity extends BaseActivity implements OnClickListener 
 					if ("200".equals(resultCode))
 						status = true;
 					listMap = (List<Map<String, Object>>) ((HashMap) object).get("info");
+					int i = 0;
+					for (Map<String, Object> map : listMap) {
+						i++;
+						String userId = (String) (map.get("userId"));
+						if (userId.equals(userPreference.getUserId())) {
+							// 如果在返回的map中，则显示第几名
+							// 显示当前年月
+							recDateTime.setText("最近统计时间" + DateTimeTools.getCurDateTime2() + "\n我的排名：第" + i + "名");
+							// 最近统计时间2016年2月1日 0:00\n我的排名：榜外
+						} else {
+							recDateTime.setText("最近统计时间" + DateTimeTools.getCurDateTime2() + "\n我的排名：榜外");
+						}
+
+					}
 				} catch (JSONException e2) {
 					// TODO Auto-generated catch block
 					e2.printStackTrace();
@@ -261,9 +294,8 @@ public class ScoreBoardActivity extends BaseActivity implements OnClickListener 
 				if (status) {
 					listView.setAdapter(new CustomListAdapter(getContext()));
 				} else {
-					 String errorMessage = (String) ((HashMap) object).get("errorMessage");
-					 LogTool.e(Constants.PACKAGENAME,
-					 "获取积分榜出错失败，errorMessage：" + errorMessage);
+					String errorMessage = (String) ((HashMap) object).get("errorMessage");
+					LogTool.e(Constants.PACKAGENAME, "获取积分榜出错失败，errorMessage：" + errorMessage);
 					ToastTool.showLong(ScoreBoardActivity.this, "获取积分榜出错！");
 				}
 			}
@@ -361,8 +393,40 @@ public class ScoreBoardActivity extends BaseActivity implements OnClickListener 
 				.cacheInMemory(true) // 设置下载的图片是否缓存在内存中
 				.cacheOnDisk(true) // 设置下载的图片是否缓存在SD卡中
 //				.displayer(new CircleBitmapDisplayer()) // 设置成圆角图片
+				.displayer(new RoundedBitmapDisplayer(2)) // 设置成圆角图片
 				.build(); // 创建配置过得DisplayImageOption对象
 		return options;
+	}
+
+	/**
+	 * Shows the progress UI and hides the login form.
+	 */
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+	public void showProgress(final boolean show) {
+		// On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+		// for very easy animations. If available, use these APIs to fade-in
+		// the progress spinner.
+		if (show) {
+			// 隐藏软键盘
+			((InputMethodManager) getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
+					ScoreBoardActivity.this.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+		}
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+			int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+			mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+			mProgressView.animate().setDuration(shortAnimTime).alpha(show ? 1 : 0)
+					.setListener(new AnimatorListenerAdapter() {
+						@Override
+						public void onAnimationEnd(Animator animation) {
+							mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+						}
+					});
+		} else {
+			// The ViewPropertyAnimator APIs are not available, so simply show
+			// and hide the relevant UI components.
+			mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+		}
 	}
 
 }

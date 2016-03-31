@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,8 @@ import org.json.JSONObject;
 import com.avos.avoscloud.AVCloud;
 import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVObject;
+import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.FindCallback;
 import com.avos.avoscloud.FunctionCallback;
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
@@ -111,6 +114,7 @@ public class MapRouteActivity extends BaseActivity implements OnClickListener {
 	DecimalFormat decimalFormat = new DecimalFormat("0.00");// 距离取两位小数点
 	// 语音合成对象
 	private SpeechSynthesizer mTts;
+	Runnable runnableInsertAndUpdate;
 	// 引擎类型
 	private String mEngineType = SpeechConstant.TYPE_CLOUD;
 	// 默认发音人
@@ -221,25 +225,23 @@ public class MapRouteActivity extends BaseActivity implements OnClickListener {
 		sportRecordDbService = SportRecordDbService.getInstance(MapRouteActivity.this);
 
 		handler3Mius = new Handler();
-		handler3Mius.postDelayed(runnable, 1 * 60 * 1000);// 打开定时器，执行操作
+		runnableInsertAndUpdate = new Runnable() {
 
-	}
-
-	Runnable runnable = new Runnable() {
-
-		@Override
-		public void run() {
-			while (isupdate) {
-				// TODO Auto-generated method stub
-				// 没三分钟执行一次保存或者更新操作
-				String motionTrack = list.toString();
-				storeSportRecordTmp(motionTrack, distance);
-				LogTool.i("执行了一次临时表和云端数据表的更新操作！");
-				handler3Mius.postDelayed(this, 1 * 60 * 1000);// 1 * 60 *
-																// 1000是延时时长
+			@Override
+			public void run() {
+				if (isupdate) {
+					// TODO Auto-generated method stub
+					// 没三分钟执行一次保存或者更新操作
+					String motionTrack = list.toString();
+					storeSportRecordTmp(motionTrack, distance);
+					LogTool.i("*******执行了一次临时表和云端数据表的更新操作！*****");
+					handler3Mius.postDelayed(this, 3 * 60 * 1000);// 3 * 60 *
+																	// 1000是延时时长
+				}
 			}
-		}
-	};
+		};
+		handler3Mius.postDelayed(runnableInsertAndUpdate, 3 * 60 * 1000);// 打开定时器，执行操作
+	}
 
 	/**
 	 * 开始定位
@@ -371,7 +373,7 @@ public class MapRouteActivity extends BaseActivity implements OnClickListener {
 
 			// 完成运动后表示用户已经跑步完成
 			userPreference.setUserFinish(true);
-			handler3Mius.removeCallbacks(runnable);// 关闭定时器处理
+			handler3Mius.removeCallbacks(runnableInsertAndUpdate);// 关闭定时器处理
 			// 完成后将数据置为初始状态
 			userPreference.setResetState();
 
@@ -743,11 +745,11 @@ public class MapRouteActivity extends BaseActivity implements OnClickListener {
 	 * @return
 	 * @return: Boolean
 	 */
-	public Boolean storeSportRecordTmp(String motionTrack, float distance) {
-		int sportType = sport_state; // 运动状态
-		String startTime = curDate;
-		String endTime = "";// 结束时间暂时不存
-		int pauseTime = 0;// 暂停时间暂时不存
+	public Boolean storeSportRecordTmp(final String motionTrack, final float distance) {
+		final int sportType = sport_state; // 运动状态
+		final String startTime = curDate;
+		final String endTime = "";// 结束时间暂时不存
+		final int pauseTime = 0;// 暂停时间暂时不存
 		// String motionTrack = list.toString();
 		// Float dstc = distance;
 		// 点击完开始后
@@ -756,18 +758,42 @@ public class MapRouteActivity extends BaseActivity implements OnClickListener {
 		// 存储信息，如果有的话就更新，否则做插入操作
 		sportRecordTmpDbService.addSportRecordTmp(srt);
 
-		// 同时将数据存到云端
-		AVObject post = new AVObject("SportRecordTemp");
-		post.put("uid", uuidString);
-		post.put("userID", userPreference.getUserId());
-		post.put("sportType", sportType);
-		post.put("startTime", DateTimeTools.StringToDate(startTime));
-		post.put("endTime", DateTimeTools.StringToDate(endTime));
-		post.put("pauseTime", pauseTime);
-		post.put("motionTrack", motionTrack);
-		post.put("distance", distance);
-		post.saveInBackground();
-		
+		// 去云端数据库中取对象 SportRecord
+		AVQuery<AVObject> sportRecordQuery = new AVQuery<AVObject>("SportRecordTemp");
+		sportRecordQuery.whereEqualTo("userID", userPreference.getUserId());
+		sportRecordQuery.findInBackground(new FindCallback<AVObject>() {
+			@Override
+			public void done(List<AVObject> arg0, AVException arg1) {
+				// TODO Auto-generated method stub
+				if (arg1 == null) {
+					if (arg0.size() == 1) {
+						AVObject post = arg0.get(0);
+						post.put("uid", uuidString);
+						post.put("userID", userPreference.getUserId());
+						post.put("sportType", sportType);
+						post.put("startTime", DateTimeTools.StringToDate(startTime));
+						post.put("endTime", DateTimeTools.StringToDate(endTime));
+						post.put("pauseTime", pauseTime);
+						post.put("motionTrack", motionTrack);
+						post.put("distance", distance);
+						post.saveInBackground();
+					}
+				} else {// 如果云端不存在这样一条数据则插入
+						// 同时将数据存到云端
+					AVObject post = new AVObject("SportRecordTemp");
+					post.put("uid", uuidString);
+					post.put("userID", userPreference.getUserId());
+					post.put("sportType", sportType);
+					post.put("startTime", DateTimeTools.StringToDate(startTime));
+					post.put("endTime", DateTimeTools.StringToDate(endTime));
+					post.put("pauseTime", pauseTime);
+					post.put("motionTrack", motionTrack);
+					post.put("distance", distance);
+					post.saveInBackground();
+				}
+			}
+		});
+
 		return true;
 	}
 
@@ -783,29 +809,52 @@ public class MapRouteActivity extends BaseActivity implements OnClickListener {
 	 * @return
 	 * @return: Boolean
 	 */
-	public Boolean storeSportRecord(String motionTrack, float distance, int pauseTime) {
-		int sportType = sport_state; // 运动状态
-		String startTime = curDate;
+	public Boolean storeSportRecord(final String motionTrack, final float distance, final int pauseTime) {
+		final int sportType = sport_state; // 运动状态
+		final String startTime = curDate;
 		// String motionTrack = list.toString();
 		// Float dstc = distance;
-		String endTime = DateTimeTools.getCurDateTime();
+		final String endTime = DateTimeTools.getCurDateTime();
 		// 点击完完成后
 		SportRecord srt = new SportRecord(uuidString, userPreference.getUserId(), sportType, startTime, endTime,
 				pauseTime, motionTrack, distance);
 		// 存储信息，如果有的话就更新，否则做插入操作
 		sportRecordDbService.addSportRecord(srt);
 
-		// 同时将数据存到云端
-		AVObject post = new AVObject("SportRecord");
-		post.put("uid", uuidString);
-		post.put("userID", userPreference.getUserId());
-		post.put("sportType", sportType);
-		post.put("startTime", DateTimeTools.StringToDate(startTime));
-		post.put("endTime", DateTimeTools.StringToDate(endTime));
-		post.put("pauseTime", pauseTime);
-		post.put("motionTrack", motionTrack);
-		post.put("distance", distance);
-		post.saveInBackground();
+		// 去云端数据库中取对象 SportRecord
+		AVQuery<AVObject> sportRecordQuery = new AVQuery<AVObject>("SportRecord");
+		sportRecordQuery.whereEqualTo("userID", userPreference.getUserId());
+		sportRecordQuery.findInBackground(new FindCallback<AVObject>() {
+			@Override
+			public void done(List<AVObject> arg0, AVException arg1) {
+				// TODO Auto-generated method stub
+				if (arg1 == null) {
+					if (arg0.size() == 1) {
+						AVObject post = arg0.get(0);
+						post.put("uid", uuidString);
+						post.put("userID", userPreference.getUserId());
+						post.put("sportType", sportType);
+						post.put("startTime", DateTimeTools.StringToDate(startTime));
+						post.put("endTime", DateTimeTools.StringToDate(endTime));
+						post.put("pauseTime", pauseTime);
+						post.put("motionTrack", motionTrack);
+						post.put("distance", distance);
+						post.saveInBackground();
+					}
+				} else {// 如果云端不存在这样一条数据则插入
+					AVObject post = new AVObject("SportRecord");
+					post.put("uid", uuidString);
+					post.put("userID", userPreference.getUserId());
+					post.put("sportType", sportType);
+					post.put("startTime", DateTimeTools.StringToDate(startTime));
+					post.put("endTime", DateTimeTools.StringToDate(endTime));
+					post.put("pauseTime", pauseTime);
+					post.put("motionTrack", motionTrack);
+					post.put("distance", distance);
+					post.saveInBackground();
+				}
+			}
+		});
 
 		// 做下积分获取操作
 
@@ -836,7 +885,7 @@ public class MapRouteActivity extends BaseActivity implements OnClickListener {
 					Boolean status = jsonTool.getStatus(); // Boolean型变量，为true时成功
 					if (status) {
 						try {
-							jsonObject.getInt("integralGained"); // 啥也不干？！
+							ToastTool.showShort(MapRouteActivity.this, jsonObject.getInt("integralGained") +"");
 						} catch (JSONException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();

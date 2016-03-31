@@ -17,7 +17,9 @@ import com.xxn.sport.dbservice.SportRecordDbService;
 import com.xxn.sport.dbservice.SportRecordTmpDbService;
 import com.xxn.sport.entities.IntegralGained;
 import com.xxn.sport.entities.SportRecord;
+import com.xxn.sport.entities.SportRecordTmp;
 import com.xxn.sport.utils.DateTimeTools;
+import com.xxn.sport.utils.LogTool;
 import com.xxn.sport.utils.UserPreference;
 
 import android.content.Intent;
@@ -112,7 +114,7 @@ public class MainActivity extends BaseActivity implements OnClickListener {
 
 		// 去云端数据库中取对象 SportRecord
 		AVQuery<AVObject> integralGainedQuery = new AVQuery<AVObject>("IntegralGained");
-//		integralGainedQuery.whereEqualTo("userID", userid);
+		// integralGainedQuery.whereEqualTo("userID", userid);
 		integralGainedQuery.findInBackground(new FindCallback<AVObject>() {
 			@Override
 			public void done(List<AVObject> arg0, AVException arg1) {
@@ -125,7 +127,8 @@ public class MainActivity extends BaseActivity implements OnClickListener {
 						Date gainTime = avObject.getDate("gainTime");
 						int integral = avObject.getInt("integral");
 						int gainReason = avObject.getInt("gainReason");
-						IntegralGained integralgained = new IntegralGained(uid, useId, DateTimeTools.DateToDateString(gainTime), integral, gainReason);
+						IntegralGained integralgained = new IntegralGained(uid, useId,
+								DateTimeTools.DateToDateString(gainTime), integral, gainReason);
 						integralGainedDbService.addIntegralGained(integralgained);
 					}
 				}
@@ -151,11 +154,13 @@ public class MainActivity extends BaseActivity implements OnClickListener {
 						int pauseTime = avObject.getInt("pauseTime");
 						String motionTrack = avObject.getString("motionTrack");
 						Float distance = (float) avObject.getDouble("distance");
-						SportRecord sportrecord = new SportRecord(uid, userID, sportType, DateTimeTools.DateToDateString(startTime), DateTimeTools.DateToDateString(endTime), pauseTime,
-								motionTrack, distance);
+						SportRecord sportrecord = new SportRecord(uid, userID, sportType,
+								DateTimeTools.DateToDateString(startTime), DateTimeTools.DateToDateString(endTime),
+								pauseTime, motionTrack, distance);
 						sportRecordDbService.addSportRecord(sportrecord);
+//						LogTool.i(sportrecord.getUid());
 					}
-					
+
 					// 初始化总的时间和总的里程数
 					String recordTime = sportRecordDbService.getSportRecordTime(userid);
 					String recordDistance = sportRecordDbService.getSportRecordDistance(userid);
@@ -167,6 +172,32 @@ public class MainActivity extends BaseActivity implements OnClickListener {
 			}
 		});
 
+		// 去云端数据库中取对象 SportRecordTmp
+		AVQuery<AVObject> SportRecordTmpQuery = new AVQuery<AVObject>("SportRecordTmp");
+		SportRecordTmpQuery.whereEqualTo("userID", userid);
+		SportRecordTmpQuery.findInBackground(new FindCallback<AVObject>() {
+			@Override
+			public void done(List<AVObject> arg0, AVException arg1) {
+				// TODO Auto-generated method stub
+				if (arg1 == null) {
+					for (AVObject avObject : arg0) {
+						// 获取值
+						String uid = avObject.getString("uid");
+						String userID = avObject.getString("userID");
+						int sportType = avObject.getInt("sportType");
+						Date startTime = avObject.getDate("startTime");
+						Date endTime = avObject.getDate("endTime");
+						int pauseTime = avObject.getInt("pauseTime");
+						String motionTrack = avObject.getString("motionTrack");
+						Float distance = (float) avObject.getDouble("distance");
+						SportRecordTmp sportRecordTmp = new SportRecordTmp(uid, userID, sportType,
+								DateTimeTools.DateToDateString(startTime), DateTimeTools.DateToDateString(endTime),
+								pauseTime, motionTrack, distance);
+						sportRecordTmpDbService.addSportRecordTmp(sportRecordTmp);
+					}
+				}
+			}
+		});
 
 		// AVObject.fetchAllInBackground(objects, new FindCallback<AVObject>() {
 		//

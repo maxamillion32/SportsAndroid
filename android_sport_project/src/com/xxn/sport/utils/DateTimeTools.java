@@ -122,7 +122,7 @@ public class DateTimeTools {
 	/**
 	 * 获取当前日期yyyy-MM-dd HH:mm:ss
 	 * 
-	 * @Title: getCurDate
+	 * @Title: getCurDateTime
 	 * @Description: TODO
 	 * @param time
 	 * @return
@@ -130,6 +130,20 @@ public class DateTimeTools {
 	 */
 	public static String getCurDateTime() {
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		return format.format(new Date());
+	}
+	
+	/**
+	 * 获取当前日期yyyy年MM月dd日  HH:mm
+	 * 
+	 * @Title: getCurDate
+	 * @Description: TODO
+	 * @param time
+	 * @return
+	 * @return: String
+	 */
+	public static String getCurDateTime2() {
+		SimpleDateFormat format = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
 		return format.format(new Date());
 	}
 
