@@ -1,0 +1,20 @@
+<resources>
+
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    
+    <dimen name="activity_nav_top_margin">14dp</dimen>
+     <dimen name="activity_nav_bottom_margin">7dp</dimen>
+     <dimen name="activity_navigation_height">45dp</dimen>
+     <dimen name="activity_navigation_left_icon">40dp</dimen>
+     <dimen name="activity_navigation_right_icon">40dp</dimen>
+     
+     <!-- padding部分 -->
+     <dimen name="btn_left_padding">10dp</dimen>
+      <dimen name="btn_right_padding">10dp</dimen>
+      <dimen name="btn_top_padding">10dp</dimen>
+      <dimen name="btn_bottom_padding">10dp</dimen>
+      
+
+</resources>

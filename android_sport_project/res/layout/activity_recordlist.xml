@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cream_white_bg"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="@dimen/activity_navigation_height"
+        android:background="@color/black_bg"
+        android:padding="0.0px" >
+
+        <ImageView
+            android:id="@+id/left_btn_back"
+            android:layout_width="15dp"
+            android:layout_height="15dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:src="@drawable/ic_action_previous_item" />
+
+        <TextView
+            android:id="@+id/nav_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="我的记录"
+            android:textColor="@color/font_white"
+            android:textSize="18sp" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/gary_bg"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/total_integralgained_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="35dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/shape_blank_white_radius"
+            android:drawableLeft="@drawable/score_img"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="  当前积分  6666分"
+            android:textColor="@color/font_white"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="@dimen/activity_navigation_height"
+        android:layout_marginTop="5dp"
+        android:background="@color/cream_white_bg"
+        android:orientation="horizontal"
+        android:padding="0.0px" >
+
+        <RelativeLayout
+            android:id="@+id/past_record_list"
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:padding="0.0px" >
+
+            <ImageView
+                android:id="@+id/selected_dot_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:background="@drawable/selected_dot" />
+
+            <TextView
+                android:id="@+id/past_record_list_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/selected_dot_1"
+                android:padding="12dp"
+                android:text="获取历史"
+                android:textColor="@color/font_red"
+                android:textSize="14sp" />
+        </RelativeLayout>
+
+        <View
+            android:layout_width="0.2dp"
+            android:layout_height="fill_parent"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@color/gary_bg" />
+
+        <RelativeLayout
+            android:id="@+id/sport_record_list"
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:padding="0.0px" >
+
+            <ImageView
+                android:id="@+id/selected_dot_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:background="@drawable/selected_dot"
+                android:visibility="invisible" />
+
+            <TextView
+                android:id="@+id/sport_record_list_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/selected_dot_2"
+                android:padding="12dp"
+                android:text="运动记录"
+                android:textColor="@color/font_black"
+                android:textSize="14sp" />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="0.1dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:background="@color/cream_dark_white_bg" />
+
+    <ListView
+        android:id="@+id/list_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp" />
+
+</LinearLayout>

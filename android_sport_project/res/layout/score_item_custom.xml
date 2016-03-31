@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="160dp">
+
+    <TextView
+        android:id="@+id/order_num"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="8dp"
+        android:text="1"
+        android:textColor="@color/font_black"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <RelativeLayout
+        android:id="@+id/info_money"
+        android:layout_toRightOf="@id/order_num"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp">
+
+        <ImageView
+            android:id="@+id/sport_head"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_below="@+id/sport_head_hat"
+            android:background="@drawable/k_sport_head" />
+
+        <ImageView
+            android:id="@id/sport_head_hat"
+            android:layout_width="30dp"
+            android:layout_height="20dp"
+            android:layout_centerHorizontal="true" />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/rank_user_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="二目丁"
+        android:textColor="@color/font_black"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/rank_user_score"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="8dp"
+        android:text="3456"
+        android:textColor="@color/font_black"
+        android:textSize="18sp" />
+
+</RelativeLayout>
