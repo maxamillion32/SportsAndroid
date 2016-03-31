@@ -40,7 +40,7 @@ public class ScoreBoardActivity extends BaseActivity implements OnClickListener 
 	private ListView listView;
 	private List<String> items = new ArrayList<String>();;
 	private List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>(); // 用于存储list数据
-	private TextView orderNum;oooo
+	private TextView orderNum;
 	private TextView rankUserName;
 	private TextView userScore;
 	private ImageView sportHead;
